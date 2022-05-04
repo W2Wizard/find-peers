@@ -33,10 +33,8 @@ class RequestLimiter {
 			return
 		}
 		this._requestsThisSecond++
-		if (this._requestsThisSecond >= this._maxRequestPerSecond) {
-			console.log(((this._thisSecond + 1) * 1000) - now)
+		if (this._requestsThisSecond >= this._maxRequestPerSecond)
 			await new Promise(resolve => setTimeout(resolve, ((this._thisSecond + 1) * 1000) - now))
-		}
 	}
 }
 
@@ -51,7 +49,7 @@ export class API {
 	private _cooldownGrowthFactor: number
 	private _limiter: RequestLimiter
 
-	constructor(clientUID: string, clientSecret: string, maxRequestPerSecond: number = 1 / 3, logging: boolean = false, root = 'https://api.intra.42.fr') {
+	constructor(clientUID: string, clientSecret: string, maxRequestPerSecond: number = 2, logging: boolean = false, root = 'https://api.intra.42.fr') {
 		this._logging = logging
 		this._root = root
 		this._tokens = { clientUID, clientSecret }
@@ -72,8 +70,6 @@ export class API {
 		try {
 			await this._limiter.limit()
 			response = await fetch(path, opt)
-			// TODO: do something better than this
-			await new Promise(resolve => setTimeout(resolve, 3.1 * 1000)) // to avoid getting to the request limit of 1200 per hour
 			const json = await response.json()
 			this._cooldown = this._startCooldown
 			return json
